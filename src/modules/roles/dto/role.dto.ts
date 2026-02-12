@@ -1,5 +1,6 @@
 import {
   IsString,
+  IsInt,
   IsNotEmpty,
   IsArray,
   IsNumber,
@@ -25,4 +26,10 @@ export class UpdateRoleDto {
   @IsOptional()
   @IsNumber({}, { each: true })
   permissionIds?: number[];
+}
+
+export class TogglePermissionDto {
+  @IsInt()
+  @IsNotEmpty()
+  permissionId: number;
 }

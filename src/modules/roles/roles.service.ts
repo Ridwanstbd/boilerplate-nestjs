@@ -10,17 +10,15 @@ import { CreateRoleDto, UpdateRoleDto } from './dto/role.dto';
 export class RolesService {
   constructor(private prisma: PrismaService) {}
 
-  // 1. Ambil Semua Role
   async findAll() {
     return this.prisma.role.findMany({
       include: {
-        permissions: true, // Sertakan data permission
-        _count: { select: { users: true } }, // Hitung jumlah user di role ini
+        permissions: true,
+        _count: { select: { users: true } },
       },
     });
   }
 
-  // 2. Ambil Detail Role
   async findOne(id: number) {
     const role = await this.prisma.role.findUnique({
       where: { id },
@@ -30,9 +28,7 @@ export class RolesService {
     return role;
   }
 
-  // 3. Buat Role Baru & Assign Permission
   async create(dto: CreateRoleDto) {
-    // Cek nama kembar
     const existing = await this.prisma.role.findUnique({
       where: { name: dto.name },
     });
@@ -42,16 +38,14 @@ export class RolesService {
       data: {
         name: dto.name,
         permissions: {
-          connect: dto.permissionIds.map((id) => ({ id })), // Hubungkan permission berdasarkan ID
+          connect: dto.permissionIds.map((id) => ({ id })),
         },
       },
       include: { permissions: true },
     });
   }
 
-  // 4. Update Role & Permission
   async update(id: number, dto: UpdateRoleDto) {
-    // Cek role ada atau tidak
     await this.findOne(id);
 
     return this.prisma.role.update({
@@ -59,16 +53,29 @@ export class RolesService {
       data: {
         name: dto.name,
         permissions: dto.permissionIds
-          ? { set: dto.permissionIds.map((id) => ({ id })) } // 'set' akan mengganti seluruh permission lama dengan yang baru
+          ? { set: dto.permissionIds.map((id) => ({ id })) }
           : undefined,
       },
       include: { permissions: true },
     });
   }
 
-  // 5. Hapus Role
+  async togglePermission(roleId: number, permissionId: number) {
+    const role = await this.findOne(roleId);
+    const hasPermission = role.permissions.some((p) => p.id === permissionId);
+
+    return this.prisma.role.update({
+      where: { id: roleId },
+      data: {
+        permissions: hasPermission
+          ? { disconnect: { id: permissionId } }
+          : { connect: { id: permissionId } },
+      },
+      include: { permissions: true },
+    });
+  }
+
   async remove(id: number) {
-    // Cek apakah ada user yang masih pakai role ini
     const userCount = await this.prisma.user.count({ where: { roleId: id } });
     if (userCount > 0) {
       throw new BadRequestException(
@@ -79,7 +86,6 @@ export class RolesService {
     return this.prisma.role.delete({ where: { id } });
   }
 
-  // 6. List Semua Permission (Untuk UI dropdown saat bikin role)
   async findAllPermissions() {
     return this.prisma.permission.findMany();
   }

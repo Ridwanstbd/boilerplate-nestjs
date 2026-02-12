@@ -14,6 +14,7 @@ import { CreateRoleDto, UpdateRoleDto } from './dto/role.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { PermissionsGuard } from 'src/common/guards/permissions.guard';
 import { RequirePermissions } from 'src/common/decorators/permissions.decorator';
+import { TogglePermissionDto } from './dto/role.dto';
 
 @Controller('roles')
 @UseGuards(JwtAuthGuard, PermissionsGuard) // Pasang Guard Utama
@@ -48,6 +49,15 @@ export class RolesController {
   @RequirePermissions('update_role')
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateRoleDto) {
     return this.rolesService.update(id, dto);
+  }
+
+  @Post(':id/toggle-permission')
+  @RequirePermissions('update_role')
+  togglePermission(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: TogglePermissionDto,
+  ) {
+    return this.rolesService.togglePermission(id, dto.permissionId);
   }
 
   @Delete(':id')
