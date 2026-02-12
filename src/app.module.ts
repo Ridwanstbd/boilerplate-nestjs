@@ -9,10 +9,11 @@ import { AuthModule } from './modules/auth/auth.module';
 import { RolesService } from './modules/roles/roles.service';
 import { JwtStrategy } from './modules/auth/jwt.strategy';
 import { RolesController } from './modules/roles/roles.controller';
+import { UsersController } from './modules/users/users.controller';
 
 @Module({
   imports: [PrismaModule, AuthModule],
-  controllers: [AuthController, RolesController],
+  controllers: [AuthController, RolesController, UsersController],
   providers: [
     AuthService,
     UsersService,
