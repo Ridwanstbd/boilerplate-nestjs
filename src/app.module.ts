@@ -7,11 +7,10 @@ import { MailService } from './modules/mail/mail.service';
 import { AuthController } from './modules/auth/auth.controller';
 import { AuthModule } from './modules/auth/auth.module';
 import { RolesService } from './modules/roles/roles.service';
-import { JwtStrategy } from './modules/auth/jwt.strategy';
 import { RolesController } from './modules/roles/roles.controller';
 import { UsersController } from './modules/users/users.controller';
 import { ConfigModule } from '@nestjs/config';
-import Joi from 'joi';
+import * as Joi from 'joi';
 
 @Module({
   imports: [
@@ -23,13 +22,13 @@ import Joi from 'joi';
           .default('development'),
         PORT: Joi.number().default(3000),
 
-        DATABASE_URL: Joi.string()
-          .required()
-          .message('DATABASE_URL is required for Prisma connection'),
+        DATABASE_URL: Joi.string().required().messages({
+          'any.required': 'DATABASE_URL is required for Prisma connection',
+        }),
 
-        JWT_SECRET: Joi.string()
-          .required()
-          .message('JWT_SECRET is required to sign tokens'),
+        JWT_SECRET: Joi.string().required().messages({
+          'any.required': 'JWT_SECRET is required to sign tokens',
+        }),
         JWT_EXPIRATION: Joi.string().default('1d'),
 
         MAIL_HOST: Joi.string().required(),
@@ -38,10 +37,11 @@ import Joi from 'joi';
         MAIL_PASSWORD: Joi.string().required(),
         MAIL_FROM: Joi.string().email().required(),
 
-        FRONTEND_URL: Joi.string()
-          .uri()
-          .required()
-          .message('FRONTEND_URL is required for email redirection links'),
+        FRONTEND_URL: Joi.string().uri().required().messages({
+          'any.required':
+            'FRONTEND_URL is required for email redirection links',
+          'string.uri': 'FRONTEND_URL must be a valid URL',
+        }),
       }),
       validationOptions: {
         allowUnknown: true,
